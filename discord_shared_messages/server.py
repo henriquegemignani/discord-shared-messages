@@ -77,19 +77,19 @@ async def hello_world(request: Request):
 
 @app.get("/guild/<guild_id:int>")
 @login_required
-async def guild_index(request: Request, user, guild_id):
+async def guild_index(request: Request, guild_id):
     new_messages = []
     edit_messages = []
 
     guild: discord.Guild = bot().get_guild(guild_id)
-    discord_user: discord.Member = await guild.fetch_member(user.id)
+    discord_user: discord.Member = await guild.fetch_member(128619865358467073)
 
     for channel in guild.text_channels:
         if not bot_managed_channel(channel, discord_user):
             continue
 
         new_messages.append("<li><a href='{}'>#{}</a></li>".format(
-            app.url_for('post_message_form', guild_id=guild_id, channel_id=channel.id),
+            app.url_for('post_message_form', guild_id=guild_id, channel_id=channel.id, _external=True),
             channel.name,
         ))
 
@@ -97,7 +97,8 @@ async def guild_index(request: Request, user, guild_id):
             m: discord.Message = message
             if m.author == bot().user:
                 edit_messages.append("<li><a href='{}'>{} in #{}</a>: {}</li>".format(
-                    app.url_for('edit_message_form', guild_id=guild_id, channel_id=channel.id, message_id=m.id),
+                    app.url_for('edit_message_form', guild_id=guild_id, channel_id=channel.id,
+                                message_id=m.id, _external=True),
                     m.id,
                     channel.name,
                     m.content[:50],
@@ -136,7 +137,8 @@ async def post_message_form(request: Request, user, guild_id, channel_id):
     form = MessageForm()
     return response.html(f"""
     <h1>Post new message to #{channel.name}</h1>
-    <form action="{app.url_for('post_message', guild_id=guild_id, channel_id=channel_id)}" method="POST">
+    <form action="{app.url_for('post_message', guild_id=guild_id,
+                               channel_id=channel_id, _external=True)}" method="POST">
       {'<br>'.join(form.body.errors)}
       <br>
       {form.body(size=40, placeholder="Message body")}<br />
@@ -177,7 +179,7 @@ async def edit_message_form(request: Request, user, guild_id, channel_id, messag
     return response.html(f"""
     <h1>Editing message in #{channel.name}</h1>
     <form action="{app.url_for('edit_message', guild_id=guild_id, channel_id=channel_id,
-                               message_id=message_id)}" method="POST">
+                               message_id=message_id, _external=True)}" method="POST">
       {'<br>'.join(form.body.errors)}
       <br>
       {form.body(size=40)}<br />
