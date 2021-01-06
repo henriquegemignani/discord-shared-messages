@@ -6,7 +6,7 @@ networks:
 
 services:
   bot:
-    image: "discord_shared_messages"
+    image: "henriquegemignani/discord-shared-messages:edge"
 
     environment:
       - "SANIC_DISCORD_TOKEN=${DISCORD_TOKEN}"
