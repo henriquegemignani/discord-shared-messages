@@ -9,6 +9,7 @@ python = "^3.9"
 "discord.py" = "^1.5.1"
 sanic = ">=20"
 Sanic-WTF = "^0.6.0"
+sanic-session = "^0.7.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

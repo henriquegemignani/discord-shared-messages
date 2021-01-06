@@ -275,6 +275,25 @@ docs = ["sphinx (>=2.1.2)", "sphinx-rtd-theme", "recommonmark (>=0.5.0)", "docut
 test = ["pytest (==5.2.1)", "multidict (>=4.0,<5.0)", "gunicorn", "pytest-cov", "httpcore (==0.3.0)", "beautifulsoup4", "pytest-sanic", "pytest-sugar", "pytest-benchmark", "uvloop (>=0.5.3)", "ujson (>=1.35)"]
 
 [[package]]
+name = "sanic-session"
+version = "0.7.3"
+description = "Provides server-backed sessions for Sanic using Redis, Memcache and more."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+sanic = "*"
+ujson = "*"
+
+[package.extras]
+aiomcache = ["aiomcache (>=0.5.2)"]
+aioredis = ["aioredis (>=1.0.0)"]
+dev = ["pytest", "aiohttp", "pytest-asyncio", "pytest-mock", "pytest-cov", "wheel", "sphinx", "sphinxcontrib-fulltoc", "flake8", "black"]
+mongo = ["sanic-motor", "pymongo"]
+redis = ["asyncio-redis"]
+
+[[package]]
 name = "sanic-wtf"
 version = "0.6.0"
 description = "Sanic-WTF - Sanic meets WTForms"
@@ -360,7 +379,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "46eee9da904fbc3007dd267ca06fb731ae82c84f8481e8a305422b6eb208f2be"
+content-hash = "5c9de9fe2b4eddfce44422bb6f932d9a7035208958c571adbcfc1fbef583e773"
 
 [metadata.files]
 aiofiles = [
@@ -525,6 +544,10 @@ rfc3986 = [
 sanic = [
     {file = "sanic-20.9.0-py3-none-any.whl", hash = "sha256:e0a54dc637042e6b9b5db965a9e41891500190de20e4573e874adfe043d428f7"},
     {file = "sanic-20.9.0.tar.gz", hash = "sha256:d91bf266f672460ff0be1a421fec4bb2ec572490bbf4453de0c2057994140341"},
+]
+sanic-session = [
+    {file = "sanic_session-0.7.3-py3-none-any.whl", hash = "sha256:308e27ca0af8fdd3d43ff7303337b73b5da686096dc2bc3258afbdcd6aca11fd"},
+    {file = "sanic_session-0.7.3.tar.gz", hash = "sha256:ede029e122ddfa0734c77207ed27264d13697aae0ab45309702c3162a10cf824"},
 ]
 sanic-wtf = [
     {file = "Sanic-WTF-0.6.0.tar.gz", hash = "sha256:0e7b7676cdd9f8caf9c45dca9ab7dfca5eb897ea0ad1ec3f6fef6effa8272639"},
