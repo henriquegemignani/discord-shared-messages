@@ -1,3 +1,4 @@
+import functools
 import importlib
 import logging
 from functools import partial
@@ -106,6 +107,7 @@ def login_required(async_handler=None, provider=None, add_user_info=True, email_
     if email_regex is not None:
         email_regex = re.compile(email_regex)
 
+    @functools.wraps(async_handler)
     async def wrapped(request: Request, **kwargs):
         nonlocal provider
         oauth_endpoint_uri = None
