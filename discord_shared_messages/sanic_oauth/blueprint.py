@@ -134,7 +134,7 @@ def login_required(async_handler=None, provider=None, add_user_info=True, email_
         if 'token' not in request.ctx.session:
             if provider:
                 request.ctx.session['oauth_provider'] = provider
-            request.ctx.session['after_auth_redirect'] = request.url
+            request.ctx.session['after_auth_redirect'] = request.url_for(async_handler.__name__, **kwargs)
             return redirect(oauth_endpoint_uri)
 
         # Shortcircuit out if we don't care about user info
