@@ -77,12 +77,12 @@ async def hello_world(request: Request):
 
 @app.get("/guild/<guild_id:int>")
 @login_required
-async def guild_index(request: Request, guild_id):
+async def guild_index(request: Request, user, guild_id):
     new_messages = []
     edit_messages = []
 
     guild: discord.Guild = bot().get_guild(guild_id)
-    discord_user: discord.Member = await guild.fetch_member(128619865358467073)
+    discord_user: discord.Member = await guild.fetch_member(user.id)
 
     for channel in guild.text_channels:
         if not bot_managed_channel(channel, discord_user):
