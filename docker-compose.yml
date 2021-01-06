@@ -13,6 +13,7 @@ services:
       - "SANIC_OAUTH_CLIENT_ID=${DISCORD_OAUTH_CLIENT_ID}"
       - "SANIC_OAUTH_CLIENT_SECRET=${DISCORD_OAUTH_CLIENT_SECRET}"
       - "SANIC_OAUTH_REDIRECT_URI=https://${DOMAIN}/${PATH_PREFIX}/oauth"
+      - "SANIC_PROXIES_COUNT=1"
 
     labels:
       - "traefik.enable=true"

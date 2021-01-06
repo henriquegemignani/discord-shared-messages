@@ -108,7 +108,7 @@ def login_required(async_handler=None, provider=None, add_user_info=True, email_
 
     async def wrapped(request: Request, **kwargs):
         nonlocal provider
-        oauth_endpoint_path = None
+        oauth_endpoint_uri = None
         oauth_email_regex = None
         provider_confs = request.app.config.get('OAUTH_PROVIDERS', {})
         if provider is None and 'default' in provider_confs:
@@ -122,10 +122,10 @@ def login_required(async_handler=None, provider=None, add_user_info=True, email_
                 else:
                     raise OAuthConfigurationException(
                         "No provider named {} configured".format(provider))
-            oauth_endpoint_path = provider_config.get('ENDPOINT_PATH', None)
+            oauth_endpoint_uri = provider_config.get('REDIRECT_URI', None)
             oauth_email_regex = provider_config.get('EMAIL_REGEX', None)
-        if not oauth_endpoint_path:
-            oauth_endpoint_path = request.app.config.OAUTH_ENDPOINT_PATH
+        if not oauth_endpoint_uri:
+            oauth_endpoint_uri = request.app.config.OAUTH_REDIRECT_URI
         if not oauth_email_regex:
             oauth_email_regex = request.app.config.OAUTH_EMAIL_REGEX
         # Do core oauth authentication once per session
@@ -133,7 +133,7 @@ def login_required(async_handler=None, provider=None, add_user_info=True, email_
             if provider:
                 request.ctx.session['oauth_provider'] = provider
             request.ctx.session['after_auth_redirect'] = request.path
-            return redirect(oauth_endpoint_path)
+            return redirect(oauth_endpoint_uri)
 
         # Shortcircuit out if we don't care about user info
         if not add_user_info:
@@ -141,7 +141,7 @@ def login_required(async_handler=None, provider=None, add_user_info=True, email_
 
         # Otherwise retrieve the user info once per session
         user = await fetch_user_info(
-            request, provider, oauth_endpoint_path,
+            request, provider, oauth_endpoint_uri,
             email_regex or oauth_email_regex
         )
         return await async_handler(request, user, **kwargs)
