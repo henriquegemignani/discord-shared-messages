@@ -12,4 +12,4 @@ RUN poetry install --no-dev
 
 COPY discord_shared_messages /app/discord_shared_messages
 
-CMD sanic discord_shared_messages.app
+CMD sanic --host 0.0.0.0 discord_shared_messages.app
