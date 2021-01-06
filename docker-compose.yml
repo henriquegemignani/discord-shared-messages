@@ -1,0 +1,28 @@
+version: "3.3"
+
+networks:
+  web:
+    external: true
+
+services:
+  bot:
+    image: "discord_shared_messages"
+
+    environment:
+      - "SANIC_DISCORD_TOKEN=${DISCORD_TOKEN}"
+      - "SANIC_OAUTH_CLIENT_ID=${DISCORD_OAUTH_CLIENT_ID}"
+      - "SANIC_OAUTH_CLIENT_SECRET=${DISCORD_OAUTH_CLIENT_SECRET}"
+      - "SANIC_OAUTH_REDIRECT_URI=https://${DOMAIN}/${PATH_PREFIX}/oauth"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${PATH_PREFIX}.rule=Host(`${DOMAIN}`) && PathPrefix(`/${PATH_PREFIX}`)"
+      - "traefik.http.routers.${PATH_PREFIX}.entrypoints=websecure"
+      - "traefik.http.routers.${PATH_PREFIX}.tls.certresolver=myresolver"
+      - "traefik.http.routers.${PATH_PREFIX}.middlewares=${PATH_PREFIX}_stripprefix"
+      - "traefik.http.middlewares.${PATH_PREFIX}_stripprefix.stripprefix.prefixes=/${PATH_PREFIX}"
+      - "traefik.http.services.${PATH_PREFIX}.loadbalancer.server.port=8000"
+
+    networks:
+      - web
+    restart: always
