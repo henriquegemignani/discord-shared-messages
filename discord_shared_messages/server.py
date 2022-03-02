@@ -188,6 +188,29 @@ async def edit_message_form(request: Request, user, guild_id, channel_id, messag
     """)
 
 
+@app.post("/webhook/<part1:string>/<part2:string>")
+async def webhook(request: Request, part1: str, part2: str):
+    body = request.body
+    if any(s in body for s in {b"codecov[bot]", b"dependabot[bot]"}):
+        return text("ignored due to known bot")
+
+    url = f"https://discord.com/api/webhooks/{part1}/{part2}/github"
+    headers = {
+        k: request.headers[k]
+        for k in [
+            "X-GitHub-Delivery", "X-GitHub-Event", "X-GitHub-Hook-ID", "X-GitHub-Hook-Installation-Target-ID",
+            "X-GitHub-Hook-Installation-Target-Type",
+        ]
+    }
+    headers["content-type"] = "application/json"
+
+    session: aiohttp.ClientSession = app.async_session
+    async with session.post(url, data=body, headers=headers) as resp:
+        resp.raise_for_status()
+        logger.info("response: %s", str(resp))
+        return text(f"redirected webhook. response: {await resp.text()}")
+
+
 @app.listener('before_server_start')
 async def setup(app_: Sanic, loop):
     logger.info('Starting discord bot')
@@ -197,4 +220,4 @@ async def setup(app_: Sanic, loop):
 
 
 if __name__ == '__main__':
-    app.run(port=8000, debug=True)
+    app.run(port=8000, host="0.0.0.0", debug=True)
