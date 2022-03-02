@@ -2,7 +2,7 @@ FROM python:3.9
 
 RUN mkdir /app
 COPY pyproject.toml /app
-COPY pyproject.lock /app
+COPY poetry.lock /app
 WORKDIR /app
 
 ENV PYTHONPATH=${PYTHONPATH}:${PWD}
