@@ -9,7 +9,7 @@ ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 
 RUN python -m pip install poetry
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-dev
+RUN poetry install
 
 COPY discord_shared_messages /app/discord_shared_messages
 
