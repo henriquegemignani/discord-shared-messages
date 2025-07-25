@@ -13,12 +13,13 @@ from wtforms.validators import DataRequired
 
 from discord_shared_messages.discord_bot import Bot
 from discord_shared_messages.sanic_oauth.blueprint import oauth_blueprint, login_required
+from discord_shared_messages.sanic_oauth.core import UserInfo
 
 app = Sanic("Discord Shared Messages")
 app.blueprint(oauth_blueprint)
 app.session_interface = InMemorySessionInterface()
 app.config.OAUTH_PROVIDER = 'discord_shared_messages.sanic_oauth.providers.DiscordClient'
-app.config.OAUTH_SCOPE = 'identify'
+app.config.OAUTH_SCOPE = 'guilds+identify'
 
 
 @app.listener('before_server_start')
@@ -73,6 +74,26 @@ def get_relevant_channels(guild_id: int) -> Iterator[discord.TextChannel]:
 @app.get("/")
 async def hello_world(request: Request):
     return text("Hello, world.")
+
+
+@app.get("/guilds")
+@login_required
+async def guild_list(request: Request, user: UserInfo):
+    user_guilds = {int(guild['id']) for guild in user.guilds}
+
+    entries = []
+    for guild in bot().guilds:
+        if guild.id in user_guilds:
+            entries.append("<li><a href='{}'>{}</a></li>".format(
+                app.url_for('guild_index', guild_id=guild.id, _external=True),
+                guild.name,
+            ))
+
+    return response.html(f"""
+    <h1>Possible servers</h1>
+    <ul>{''.join(entries)}</ul>
+    """)
+
 
 
 @app.get("/guild/<guild_id:int>")

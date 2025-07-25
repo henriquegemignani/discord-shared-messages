@@ -29,7 +29,7 @@ class UserInfo:  # pylint: disable=too-few-public-methods
 
     default_attrs = [
         'id', 'email', 'first_name', 'last_name', 'username', 'picture',
-        'link', 'locale', 'city', 'country', 'gender'
+        'link', 'locale', 'city', 'country', 'gender', 'guilds'
     ]
 
     def __init__(self, **kwargs) -> None:
@@ -147,6 +147,13 @@ class Client(abc.ABC):
                 reason=f'Failed to obtain User information. HTTP status code: {response.status}'
             )
         data = await response.json()
+
+        response: ClientResponse = await self.request('GET', self.user_info_url + "/guilds", **kwargs)
+        if response.status != 200:
+            raise HTTPBadRequest(
+                reason=f'Failed to obtain User information. HTTP status code: {response.status}'
+            )
+        data["guilds"] = await response.json()
         user = self.user_parse(data)
         return user, data
 
@@ -300,7 +307,7 @@ class OAuth2Client(Client):  # pylint: disable=abstract-method
         """Return formatted authorize URL."""
         params = dict(self.params, **params)
         params.update({'client_id': self.client_id, 'response_type': 'code'})
-        return self.authorize_url + '?' + urlencode(params)
+        return self.authorize_url + '?' + urlencode(params).replace("%2B", "+")
 
     async def request(
             self, method: str, url: str,

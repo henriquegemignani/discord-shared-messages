@@ -89,5 +89,6 @@ class DiscordClient(OAuth2Client):
             discriminator=data.get('discriminator'),
             avatar=data.get('avatar'),
             verified=data.get('verified'),
-            email=data.get('email')
+            email=data.get('email'),
+            guilds=data.get('guilds'),
         )

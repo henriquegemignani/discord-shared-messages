@@ -11,7 +11,7 @@ sanic = ">=20"
 Sanic-WTF = "^0.6.0"
 sanic-session = "^0.7.3"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^5.2"
 
 [build-system]
