@@ -61,20 +61,23 @@ def bot_managed_channel(channel: discord.TextChannel, member: discord.Member) ->
             and channel.permissions_for(member).manage_messages)
 
 
-def get_relevant_channels(guild_id: int) -> Iterator[discord.TextChannel]:
+async def get_bot_managed_channels(guild_id: int, user: UserInfo) -> list[discord.TextChannel]:
     guild: discord.Guild = bot().get_guild(guild_id)
-    if guild is None:
-        return []
+    discord_user: discord.Member = await guild.fetch_member(user.id)
 
-    for channel in guild.text_channels:
-        if channel.topic is not None and "#shared-message" in channel.topic:
-            yield channel
+    return [
+        channel
+        for channel in guild.text_channels
+        if bot_managed_channel(channel, discord_user)
+    ]
 
 
 @app.get("/")
 async def hello_world(request: Request):
-    return text("Hello, world.")
-
+    server_list_url = app.url_for('guild_list', _external=True)
+    return response.html(f"""
+    <a href='{server_list_url}'>Go to server list</a>
+    """)
 
 @app.get("/guilds")
 @login_required
@@ -95,41 +98,41 @@ async def guild_list(request: Request, user: UserInfo):
     """)
 
 
-
 @app.get("/guild/<guild_id:int>")
 @login_required
 async def guild_index(request: Request, user, guild_id):
-    new_messages = []
-    edit_messages = []
-
     guild: discord.Guild = bot().get_guild(guild_id)
-    discord_user: discord.Member = await guild.fetch_member(user.id)
 
-    for channel in guild.text_channels:
-        if not bot_managed_channel(channel, discord_user):
-            continue
+    post_url = app.url_for('guild_post_message_index', guild_id=guild_id, _external=True)
+    edit_url = app.url_for('guild_edit_message_index', guild_id=guild_id, _external=True)
+    return_url = app.url_for('guild_list', _external=True)
 
+    return response.html(f"""
+    <h1>{guild.name}</h1>
+    <ul>
+    <li><a href='{post_url}'>Post new message</a></li>
+    <li><a href='{edit_url}'>Edit existing message</a></li>
+    </ul>
+    <a href='{return_url}'>Return to server list</a>
+    """)
+
+
+@app.get("/guild/<guild_id:int>/post")
+@login_required
+async def guild_post_message_index(request: Request, user, guild_id):
+    new_messages = []
+
+    for channel in await get_bot_managed_channels(guild_id, user):
         new_messages.append("<li><a href='{}'>#{}</a></li>".format(
             app.url_for('post_message_form', guild_id=guild_id, channel_id=channel.id, _external=True),
             channel.name,
         ))
-
-        async for message in channel.history(oldest_first=True):
-            m: discord.Message = message
-            if m.author == bot().user:
-                edit_messages.append("<li><a href='{}'>{} in #{}</a>: {}</li>".format(
-                    app.url_for('edit_message_form', guild_id=guild_id, channel_id=channel.id,
-                                message_id=m.id, _external=True),
-                    m.id,
-                    channel.name,
-                    m.content[:50],
-                ))
+    return_url = app.url_for('guild_index', guild_id=guild_id, _external=True)
 
     return response.html(f"""
     <h1>Post new message to...</h1>
     <ul>{''.join(new_messages)}</ul>
-    <h1>Existing messages to edit:</h1>
-    <ul>{''.join(edit_messages)}</ul>
+    <a href='{return_url}'>Return to server intro</a>
     """)
 
 
@@ -165,6 +168,31 @@ async def post_message_form(request: Request, user, guild_id, channel_id):
       {form.body(size=40, placeholder="Message body")}<br />
       {form.submit}
     </form>
+    """)
+
+
+@app.get("/guild/<guild_id:int>/edit")
+@login_required
+async def guild_edit_message_index(request: Request, user, guild_id):
+    edit_messages = []
+
+    for channel in await get_bot_managed_channels(guild_id, user):
+        async for message in channel.history(oldest_first=True):
+            m: discord.Message = message
+            if m.author == bot().user:
+                edit_messages.append("<li><a href='{}'>{} in #{}</a>: {}</li>".format(
+                    app.url_for('edit_message_form', guild_id=guild_id, channel_id=channel.id,
+                                message_id=m.id, _external=True),
+                    m.id,
+                    channel.name,
+                    m.content[:50],
+                ))
+    return_url = app.url_for('guild_index', guild_id=guild_id, _external=True)
+
+    return response.html(f"""
+    <h1>Existing messages to edit:</h1>
+    <ul>{''.join(edit_messages)}</ul>
+    <a href='{return_url}'>Return to server intro</a>
     """)
 
 
